@@ -29,13 +29,13 @@ class HelloWorld(toga.App):
         main_box.add(button)
 
         login_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
-        # TODO add Containers and Widgets to your login_box
+        # TODO add Containers and Widgets to your login_box --- CAROLINE
         all_instances_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
-        # TODO add Containers and Widgets to your all_instances_box
+        # TODO add Containers and Widgets to your all_instances_box --- ATTA
         instance_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
-        # TODO add Containers and Widgets to your instance_box
+        # TODO add Containers and Widgets to your instance_box --- TOBIAS
         logout_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
-        # TODO add Containers and Widgets to your logout_box
+        # TODO add Containers and Widgets to your logout_box --- CAROLINE
 
         option_container = toga.OptionContainer(
             content=[
