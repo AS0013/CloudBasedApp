@@ -30,12 +30,53 @@ class HelloWorld(toga.App):
 
         login_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
         # TODO add Containers and Widgets to your login_box --- CAROLINE
+        #Add username box
+        username_label = toga.Label(
+            text="Username:",
+            style=Pack(padding=(0, 5)),
+        )
+        self.username_input = toga.TextInput(style=Pack(flex=1))
+
+        username_box = toga.Box(style=Pack(direction=ROW, padding=5))
+        username_box.add(username_label)
+        username_box.add(self.username_input)
+
+        #Add password box
+        password_label = toga.Label(
+            text="Password:",
+            style=Pack(padding=(0, 5)),
+        )
+        self.password_input = toga.PasswordInput(style=Pack(flex=1))
+
+        password_box = toga.Box(style=Pack(direction=ROW, padding=5))
+        password_box.add(password_label)
+        password_box.add(self.password_input)
+
+        button = toga.Button(
+            text="Login",
+            on_press=self.login_button,
+            style=Pack(padding=5),
+        )
+
+        login_box.add(username_box)
+        login_box.add(password_box)
+        login_box.add(button)
+
+
         all_instances_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
         # TODO add Containers and Widgets to your all_instances_box --- ATTA
         instance_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
         # TODO add Containers and Widgets to your instance_box --- TOBIAS
+
         logout_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
         # TODO add Containers and Widgets to your logout_box --- CAROLINE
+        button = toga.Button(
+            text="Logout",
+            on_press=self.print_message,
+            style=Pack(padding=5),
+        )
+
+        logout_box.add(button)
 
         option_container = toga.OptionContainer(
             content=[
@@ -65,12 +106,29 @@ class HelloWorld(toga.App):
             greeting(self.name_input.value),
             payload["body"],
         )
+    async def login_button(self, widget):
+        async with httpx.AsyncClient() as client:
+            response = await client.get("https://jsonplaceholder.typicode.com/posts/42")
+
+        payload = response.json()
+
+        self.main_window.info_dialog(
+            login_greeting(self.username_input.value),
+            payload["body"],
+        )
+
+    async def print_message(self,widget):
+        print("You want to logout!")
 
 def greeting(name):
     if name:
         return f"Hello, {name}"
     else:
         return "Hello, stranger"
+    
+def login_greeting(username):
+    if username:
+        return f"Hello, {username}"
 
 def main():
     return HelloWorld()
