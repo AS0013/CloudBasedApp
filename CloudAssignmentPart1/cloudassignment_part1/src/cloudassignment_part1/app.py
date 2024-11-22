@@ -29,8 +29,7 @@ class HelloWorld(toga.App):
         main_box.add(button)
 
         login_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
-        # TODO add Containers and Widgets to your login_box --- CAROLINE
-        #Add username box
+        # Add username box
         username_label = toga.Label(
             text="Username:",
             style=Pack(padding=(0, 5)),
@@ -41,7 +40,7 @@ class HelloWorld(toga.App):
         username_box.add(username_label)
         username_box.add(self.username_input)
 
-        #Add password box
+        # Add password box
         password_label = toga.Label(
             text="Password:",
             style=Pack(padding=(0, 5)),
@@ -52,6 +51,7 @@ class HelloWorld(toga.App):
         password_box.add(password_label)
         password_box.add(self.password_input)
 
+        # Add login button
         button = toga.Button(
             text="Login",
             on_press=self.login_button,
@@ -69,7 +69,7 @@ class HelloWorld(toga.App):
         # TODO add Containers and Widgets to your instance_box --- TOBIAS
 
         logout_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
-        # TODO add Containers and Widgets to your logout_box --- CAROLINE
+        # Add logout button
         button = toga.Button(
             text="Logout",
             on_press=self.print_message,
@@ -106,6 +106,8 @@ class HelloWorld(toga.App):
             greeting(self.name_input.value),
             payload["body"],
         )
+
+    # Add login button handler
     async def login_button(self, widget):
         async with httpx.AsyncClient() as client:
             response = await client.get("https://jsonplaceholder.typicode.com/posts/42")
@@ -116,7 +118,7 @@ class HelloWorld(toga.App):
             login_greeting(self.username_input.value),
             payload["body"],
         )
-
+    # Add message for logout button
     async def print_message(self,widget):
         print("You want to logout!")
 
@@ -125,7 +127,8 @@ def greeting(name):
         return f"Hello, {name}"
     else:
         return "Hello, stranger"
-    
+
+# Add gretting for login button
 def login_greeting(username):
     if username:
         return f"Hello, {username}"
