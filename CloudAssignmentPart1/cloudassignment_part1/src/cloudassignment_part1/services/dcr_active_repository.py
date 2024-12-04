@@ -61,8 +61,8 @@ class DcrActiveRepository(object):
     '''
 
     def __init__(self,dcr_user: DcrUser):
-        #TODO store a tuple for the (username, password)
-        self.basic_auth = (,)
+        #TODO store a tuple for the (username, password) CARO
+        self.basic_auth = (dcr_user.email,dcr_user.password)
 
     async def get_instances(self, graph_id):
         '''
@@ -94,9 +94,10 @@ class DcrActiveRepository(object):
             return response.status_code
             
     async def execute_event(self,graph_id,instance_id,event_id):
-        url = f"" #TODO: fill in the correct url
+        url = f"https://repository.dcrgraphs.net/api/graphs/{graph_id}/sims/{instance_id}/events/{event_id}" #TODO: fill in the correct url CARO
         async with httpx.AsyncClient() as client:
-            response =  #TODO: call the client with the apropriate http command. Remember the await in front and the auth as a parameter.
+            #TODO: call the client with the apropriate http command. Remember the await in front and the auth as a parameter.
+            response = await client.post(url, auth=self.basic_auth)
             return response.status_code
 
     async def get_events(self, graph_id, instance_id, filter: EventsFilter = EventsFilter.ALL):
