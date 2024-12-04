@@ -82,7 +82,7 @@ class DcrActiveRepository(object):
         '''
         Create a new instance (simulation) for a given graph id
         '''
-        url = f"" #TODO: fill in the correct url
+        url = f'https://repository.dcrgraphs.net/api/graphs/{graph_id}/sims'  
         async with httpx.AsyncClient() as client:
             response = #TODO: call the client with the apropriate http command. Remember the await in front and the auth as a parameter.
             return response.headers['simulationid'] # we return the simulation id
@@ -100,9 +100,9 @@ class DcrActiveRepository(object):
             return response.status_code
 
     async def get_events(self, graph_id, instance_id, filter: EventsFilter = EventsFilter.ALL):
-        url = f"" #TODO: fill in the correct url
+        url = f'https://repository.dcrgraphs.net/api/graphs/{graph_id}/sims/{instance_id}/events?filter={filter.value}'
         async with httpx.AsyncClient() as client:
-            response = #TODO: call the client with the apropriate http command. Remember the await in front and the auth as a parameter.
+            response =  await client.get(url, auth=self.basic_auth)
             # here we get the list of events in the xml format from the response
             root = ET.fromstring(response.json()) # the .json() here is needed because there is a mistmatch in the expected result format between httpx and the dcr rest api. the response is xml.
             events_xml = root.findall('event')
