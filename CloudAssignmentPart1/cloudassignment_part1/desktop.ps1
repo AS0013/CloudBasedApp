@@ -1,6 +1,6 @@
 # Remove directories if they exist
 $paths = @(
-    "build/helloworld/windows"
+    "build/cloudassignment_part1/windows"
 )
 
 foreach ($path in $paths) {

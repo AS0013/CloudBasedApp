@@ -1,6 +1,6 @@
 # Remove the directory if it exists
-if (Test-Path -Path "build/helloworld/android") {
-    Remove-Item -Path "build/helloworld/android" -Recurse -Force
+if (Test-Path -Path "build/cloudassignment_part1/android") {
+    Remove-Item -Path "build/cloudassignment_part1/android" -Recurse -Force
 }
 
 # Execute the Briefcase commands

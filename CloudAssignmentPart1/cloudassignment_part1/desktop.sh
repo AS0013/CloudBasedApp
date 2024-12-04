@@ -1,8 +1,8 @@
 # Remove the directory if it exists
-rm -r -f build/helloworld/macOS
-rm -r -f build/helloworld/ubuntu
-rm -r -f build/helloworld/linux
-rm -r -f build/helloworld/windows
+rm -r -f build/cloudassignment_part1/macOS
+rm -r -f build/cloudassignment_part1/ubuntu
+rm -r -f build/cloudassignment_part1/linux
+rm -r -f build/cloudassignment_part1/windows
 # Execute the Briefcase commands
 briefcase create
 briefcase build
