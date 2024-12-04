@@ -84,7 +84,7 @@ class DcrActiveRepository(object):
         '''
         url = f'https://repository.dcrgraphs.net/api/graphs/{graph_id}/sims'  
         async with httpx.AsyncClient() as client:
-            response = #TODO: call the client with the apropriate http command. Remember the await in front and the auth as a parameter.
+            response = await client.post(url, auth=self.basic_auth)  
             return response.headers['simulationid'] # we return the simulation id
 
     async def delete_instance(self,graph_id,instance_id):
