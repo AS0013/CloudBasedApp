@@ -208,8 +208,14 @@ class HelloWorld(toga.App):
         print('[i] Deleting all instances')
     async def create_new_instances(self,widget):
         print('[i] Creating new instances')
-    async def show_instance(self,widget):
+        self.option_container.current_tab = 'Instance run'
+        self.current_instance_id = self.dcr_ar.create_new_instance 
+        #HER
+    async def show_instance(self,widget): 
         print(f'[i] You want to show: {widget.id}')
+        self.option_container.current_tab = 'Instance run'
+        self.current_instance_id = widget.id
+        #HER
     async def delete_instance_by_id(self,widget):
         print(f'[i] You want to delete: {widget.id}')
 
@@ -227,6 +233,17 @@ class HelloWorld(toga.App):
     # Add message for logout button
     async def print_message(self,widget):
         print("You want to logout!")
+
+    async def logout_handler(self,widget):
+         self.option_container.content['Login'].enabled = True
+         self.option_container.current_tab = 'Login'
+
+         self.option_container.content['All instances'].enabled = False
+         self.option_container.content['Instance run'].enabled = False
+         self.option_container.content['Logout'].enabled = False
+
+         self.user_input.value = None
+         self.password_input.value = None
 
 # Add gretting for login button
 def login_greeting(username):
