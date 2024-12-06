@@ -8,6 +8,7 @@ from services.dcr_active_repository import check_login_from_dcr, DcrActiveReposi
 class HelloWorld(toga.App):
     graph_id = "1986619"
     dcr_ar = None
+    current_instance_id = None
     
     def startup(self):
         login_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
@@ -145,7 +146,17 @@ class HelloWorld(toga.App):
         print('[i] You have selected another Option Item!')
 
         if widget.current_tab.text == 'Instance run':
-            self.show_instance_box()
+            # await self.show_instance_box()
+
+        #  if widget.current_tab.text == 'Instance run':
+            if not self.current_instance_id:
+                instances = await self.dcr_ar.get_instances(self.graph_id)
+                if instances:
+                    self.current_instance_id = instances
+                else:
+                    self.current_instance_id = None  
+
+            await self.show_instance_box()
 
     async def delete_all_instances(self,widget):
         print('[i] Deleting all instances')
@@ -161,7 +172,6 @@ class HelloWorld(toga.App):
         print(f'[i] You want to show: {widget.id}')
         self.option_container.current_tab = 'Instance run'
         self.current_instance_id = widget.id
-        #self.current_instance_id = await self.dcr_ar.get_instances(self.graph_id)[0]
 
         self.show_instance_box()
 
@@ -195,8 +205,32 @@ class HelloWorld(toga.App):
         print('Show instance box')
         self.instance_box.clear()
 
-        events = await self.dcr_ar.get_events(self.graph_id,self.current_instance_id,EventsFilter.ALL)
+        if self.current_instance_id is None:
+        # a message if no instance is selected
+            no_instance_label = toga.Label(
+                text="No instance selected. Please create or select an instance.",
+                style=Pack(padding=(0, 5)),
+            )
+            self.instance_box.add(no_instance_label)
+            self.instance_box.refresh()
+            return
+        
+        print(f'[i] Showing instance with id: {self.current_instance_id}')
+        print("graph_id", self.graph_id)
+        print("eventsfilter", EventsFilter.ALL)
+
+        events = []
+        for instance_key, instance_name in self.current_instance_id.items():
+            try:
+                event = await self.dcr_ar.get_events(self.graph_id, instance_key, EventsFilter.ALL)
+                events.extend(event)
+            except Exception as e:
+                print(f'[x] Error fetching events for instance {instance_key}: {e}')
+                continue
+            
         role_items = []
+
+        print("after events call")
 
         each_instance = toga.Label(
             text = "Each instance will appear here"
@@ -217,6 +251,8 @@ class HelloWorld(toga.App):
         if len(role_items) > 0:
             self.role_selection.value = role_items[0]
             self.user.role = self.role_selection.value
+        else:
+            self.user.role = None
 
         main1_box = toga.Box(style = Pack(direction = ROW))
 
@@ -229,15 +265,9 @@ class HelloWorld(toga.App):
             text = "Select other role:",
             style=Pack(padding=(0, 5)),
         )
-        self.selections = toga.Selection(items = role_items, 
-                                    value = role_items[0], 
-                                    on_change = self.role_changed,
-                                    style=Pack(padding=(0, 5)),
-                                    )
-        
         role_box.add(role_label)
         role_box.add(select_role)
-        role_box.add(self.selections)
+        role_box.add(self.role_selection)
         main1_box.add(role_box)
     
 
@@ -261,12 +291,17 @@ class HelloWorld(toga.App):
 
         scroll = toga.ScrollContainer(horizontal=False,style=Pack(flex=1))
         event_box = toga.Box(style=Pack(direction=COLUMN, padding = 5))
-        for event in events:
+
+        print("events", events)
+        if events:
+         for event in events:
             color = None
             btn_enabled = True
             text = event.label
+            # print("text", text)
             if event.enabled:
                 color = 'green'
+                print("text", text)
             if event.pending:
                 color = 'blue'
                 text = text + " !"
@@ -274,7 +309,7 @@ class HelloWorld(toga.App):
                 if event.role != self.user.role:
                     btn_enabled = False
                 text = text + f" (role: {event.role})"
-            if event.enables:
+            if event.enabled:
                 event_button = toga.Button(
                     text =  text,
                     style = Pack(padding = 5, color = color),
