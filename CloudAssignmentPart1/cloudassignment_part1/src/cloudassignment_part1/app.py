@@ -182,7 +182,7 @@ class HelloWorld(toga.App):
         dcr_ar_instances = await self.dcr_ar.get_instances(self.graph_id)
         if len(dcr_ar_instances)>0:
             self.instances = dcr_ar_instances
-            
+
         for instance in self.instances:
             buttons_box = toga.Box(style=Pack(direction=ROW))
             instance_button = toga.Button(
@@ -224,12 +224,17 @@ class HelloWorld(toga.App):
 
     async def delete_all_instances(self,widget):
         print('[i] Deleting all instances')
+        for instance in self.instances:
+            await self.dcr_ar.delete_instance(self.graph_id,instance['id'])
+        await self.show_instances_box()
     async def create_new_instances(self,widget):
         print('[i] Creating new instances')
     async def show_instance(self,widget):
         print(f'[i] You want to show: {widget.id}')
     async def delete_instance_by_id(self,widget):
         print(f'[i] You want to delete: {widget.id}')
+        await self.dcr_ar.delete_instance(self.graph_id,widget.id)
+                
         
 
     # Add login button handler
