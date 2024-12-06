@@ -293,10 +293,20 @@ class HelloWorld(toga.App):
 
         self.option_container.content['Instance run'] = self.instance_box
 
-
     # Add message for logout button
     async def print_message(self,widget):
         print("You want to logout!")
+
+    async def logout_handler(self,widget):
+         self.option_container.content['Login'].enabled = True
+         self.option_container.current_tab = 'Login'
+
+         self.option_container.content['All instances'].enabled = False
+         self.option_container.content['Instance run'].enabled = False
+         self.option_container.content['Logout'].enabled = False
+
+         self.user_input.value = None
+         self.password_input.value = None
 
 # Add gretting for login button
 def login_greeting(username):
