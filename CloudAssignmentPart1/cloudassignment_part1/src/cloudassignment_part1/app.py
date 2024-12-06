@@ -149,17 +149,19 @@ class HelloWorld(toga.App):
 
     async def delete_all_instances(self,widget):
         print('[i] Deleting all instances')
+
     async def create_new_instances(self,widget):
         print('[i] Creating new instances')
-
-        await self.dcr_ar.create_new_instance(self.graph_id)
+        self.option_container.current_tab = 'Instance run'
+        self.current_instance_id = await self.dcr_ar.create_new_instance(self.graph_id)
         self.show_instance_box()
 
 
     async def show_instance(self,widget):
         print(f'[i] You want to show: {widget.id}')
-
-        self.current_instance_id = await self.dcr_ar.get_instances(self.graph_id)[0]
+        self.option_container.current_tab = 'Instance run'
+        self.current_instance_id = widget.id
+        #self.current_instance_id = await self.dcr_ar.get_instances(self.graph_id)[0]
 
         self.show_instance_box()
 
