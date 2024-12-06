@@ -3,6 +3,7 @@ import toga
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 from services.dcr_active_repository import check_login_from_dcr, DcrActiveRepository, EventsFilter, DcrUser
+from services import database_connection as dbc
 
 class HelloWorld(toga.App):
     graph_id = "1986619"
@@ -257,6 +258,8 @@ class HelloWorld(toga.App):
 
         if connected:
             self.user = DcrUser(self.username_input.value,self.password_input.value)
+            self.user.role = dbc.get_dcr_role(email=self.user.email)
+            print(f'[i] Role: {self.user.role}')
             self.dcr_ar = DcrActiveRepository(self.user)
 
             self.option_container.content['All instances'].enabled = True   
