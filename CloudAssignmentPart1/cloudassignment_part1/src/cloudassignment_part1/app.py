@@ -4,16 +4,12 @@ from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 from services.dcr_active_repository import check_login_from_dcr, DcrActiveRepository, EventsFilter, DcrUser
 
-class CloudApp(toga.App):
-    graph_id = "1986619"
-    drc_ar = None
-
-
 class HelloWorld(toga.App):
-
+    graph_id = "1986619"
+    dcr_ar = None
+    current_instance_id = None
     
     def startup(self):
-
         login_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
         # Add username box
         username_label = toga.Label(
@@ -48,75 +44,63 @@ class HelloWorld(toga.App):
         login_box.add(password_box)
         login_box.add(button)
 
+        all_instances_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
+        # TODO add Containers and Widgets to your all_instances_box --- ATTA
+        all_instances_containner = toga.ScrollContainer(horizontal=False,style=Pack(flex=1))
 
-        instance_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
-        # TODO add Containers and Widgets to your instance_box --- TOBIAS
-        all_instances = toga.Label(
-            text = "Each instance will appear here"
+        instances_label = toga.Label(
+            text = "All instances will be listed here",
+            style=Pack(padding=(0, 5))
         )
 
-        role_items = list([' ', 'Doctor', 'Nurse', 'Patient'])
-        selected_role_item = 'Doctor'
-        events = [
-            {'id': 'Diagnose', 'label': 'Diagnose', 'role': 'Doctor'},
-            {'id': 'Operate', 'label': 'Operate', 'role': 'Doctor'},
-            {'id': 'Give treatment', 'label': 'Give treatment', 'role': 'Nurse'},
-            {'id': 'Take treatment', 'label': 'Take treatment', 'role': 'Patient'}]
-        
-        main1_box = toga.Box(style = Pack(direction = ROW))
+        create_delete_box= toga.Box(style=Pack(direction=COLUMN))
 
-        role_box = toga.Box(style = Pack(direction = COLUMN,  flex = 1))
-        role_label = toga.Label(
-            text = "Current Role:",
-            style=Pack(padding=(0, 5)),
+        create_button = toga.Button(
+            text="Create new instances",
+            on_press=self.create_new_instances,
+            style=Pack(padding=5),
         )
-        select_role = toga.Label(
-            text = "Select other role:",
-            style=Pack(padding=(0, 5)),
-        )
-        self.selections = toga.Selection(items = role_items, 
-                                    value = role_items[0], 
-                                    on_change = self.role_changed,
-                                    style=Pack(padding=(0, 5)),
-                                    )
-        
-        role_box.add(role_label)
-        role_box.add(select_role)
-        role_box.add(self.selections)
-        main1_box.add(role_box)
-    
-
-        
-        instance_box_inner = toga.Box(style = Pack(direction = COLUMN, flex = 1))
-        instance_label = toga.Label(
-            text = "Current Instance:",
-            style=Pack(padding=(0, 5)),
+        delete_button = toga.Button(
+            text="Delete all instances",
+            on_press=self.delete_all_instances,
+            style=Pack(padding=5,color='red'),
         )
 
-        added = toga.Label(
-            text = "Not added yet!",
-            style=Pack(padding=(0, 5)),
-        )
+        create_delete_box.add(create_button)
+        create_delete_box.add(delete_button)
 
-        instance_box_inner.add(instance_label)
-        instance_box_inner.add(added)
-        main1_box.add(instance_box_inner)
-        
+        instances_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
+        instances = [{'id': 1, 'name': 'Atta',},
+                     {'id': 2, 'name': 'Caroline',}, 
+                     {'id': 3, 'name': 'Tobias',},
+                     {'id': 4, 'name': 'Instance 4',},
+                     {'id': 5, 'name': 'Instance 5',}]
+        for instance in instances:
+            buttons_box = toga.Box(style=Pack(direction=ROW))
+            instance_button = toga.Button(
+                instance['name'],
+                on_press=self.show_instance,
+                style=Pack(padding=5),
+                id=instance['id']
+            )
+            buttons_box.add(instance_button)
+            del_button = toga.Button(
+                "X",
+                on_press=self.delete_instance_by_id,
+                style=Pack(padding=5,color='red'),
+                id= f'X_{instance["id"]}'
+            )
+            buttons_box.add(del_button)
+            instances_box.add(buttons_box)
 
 
-        scroll = toga.ScrollContainer(horizontal=False,style=Pack(flex=1))
-        event_box = toga.Box(style=Pack(direction=COLUMN, padding = 5))
-        for event in events:
-            event_button = toga.Button(text =  f"{event['label']} (role: {event['role']})",
-                                       id = event['id'],
-                                       style=Pack( color='green'),
-                                       on_press = self.execute_event,)
-            event_box.add(event_button)
-        scroll.content = event_box
+        all_instances_containner.content = instances_box
+        all_instances_box.add(instances_label)
+        all_instances_box.add(create_delete_box)
+        all_instances_box.add(all_instances_containner)
 
-        instance_box.add(all_instances)
-        instance_box.add(main1_box)
-        instance_box.add(scroll)
+
+        self.instance_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
 
         logout_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
         # Add logout button
@@ -128,19 +112,18 @@ class HelloWorld(toga.App):
 
         logout_box.add(button)
 
-        option_container = toga.OptionContainer(
+        self.option_container = toga.OptionContainer(
             content=[
-                #toga.OptionItem("Main box", main_box),
                 toga.OptionItem("Login", login_box),
-                toga.OptionItem("All instances", self.all_instances_box),
-                toga.OptionItem("Instance run", instance_box),
+                toga.OptionItem("All instances", all_instances_box),
+                toga.OptionItem("Instance run", self.instance_box),
                 toga.OptionItem("Logout", logout_box),
                 ],
             on_select = self.option_item_changed,
             style=Pack(direction=COLUMN))
 
         self.main_window = toga.MainWindow(title=self.formal_name)
-        self.main_window.content = option_container
+        self.main_window.content = self.option_container
         self.main_window.show()
 
         self.option_container.content['Logout'].enabled = False
@@ -214,8 +197,15 @@ class HelloWorld(toga.App):
     def role_changed(self,widget):
         print(f'[i] You changed the role to {widget.value}!')
 
+        self.user.role = widget.value
+        self.show_instance_box()
+
     def execute_event(self, widget):
         print (f'[i] You want to execute event: {widget.id}')
+
+        self.current_instance_id = self.dcr_ar.get_instances(self.graph_id)[0]
+        self.dcr_ar.execute_event(self.graph_id,self.current_instance_id,widget.id)
+        self.show_instance_box()
         
     async def option_item_changed(self,widget):
         print('[i] You have selected another Option Item!')
@@ -227,31 +217,207 @@ class HelloWorld(toga.App):
         for instance in self.instances:
             await self.dcr_ar.delete_instance(self.graph_id,instance['id'])
         await self.show_instances_box()
+
+        if widget.current_tab.text == 'Instance run':
+            # await self.show_instance_box()
+
+        #  if widget.current_tab.text == 'Instance run':
+            if not self.current_instance_id:
+                instances = await self.dcr_ar.get_instances(self.graph_id)
+                if instances:
+                    self.current_instance_id = instances
+                else:
+                    self.current_instance_id = None  
+
+            await self.show_instance_box()
+
+
     async def create_new_instances(self,widget):
         print('[i] Creating new instances')
+        self.option_container.current_tab = 'Instance run'
+        self.current_instance_id = await self.dcr_ar.create_new_instance(self.graph_id)
+        self.show_instance_box()
+
+
     async def show_instance(self,widget):
         print(f'[i] You want to show: {widget.id}')
+        self.option_container.current_tab = 'Instance run'
+        self.current_instance_id = widget.id
+
+        self.show_instance_box()
+
     async def delete_instance_by_id(self,widget):
         print(f'[i] You want to delete: {widget.id}')
         await self.dcr_ar.delete_instance(self.graph_id,widget.id)
                 
-        
 
     # Add login button handler
     async def login_button(self, widget):
-        async with httpx.AsyncClient() as client:
-            response = await client.get("https://jsonplaceholder.typicode.com/posts/42")
+        connected = await check_login_from_dcr(self.username_input.value,self.password_input.value)
 
-        payload = response.json()
+        if connected:
+            self.user = DcrUser(self.username_input.value,self.password_input.value)
+            self.dcr_ar = DcrActiveRepository(self.user)
 
-        self.main_window.info_dialog(
-            login_greeting(self.username_input.value),
-            payload["body"],
+            self.option_container.content['All instances'].enabled = True   
+
+            self.option_container.current_tab = 'All instances'
+
+            self.option_container.content['Instance run'].enabled = True
+            self.option_container.content['Logout'].enabled = True
+            self.option_container.content['Login'].enabled = False
+
+            print("current tab", self.option_container.current_tab)
+
+
+            self.main_window.info_dialog('Login', 'You are connected!')
+        else:
+            self.main_window.info_dialog('Login', 'Failed to connect!')
+
+    async def show_instance_box(self):
+        print('Show instance box')
+        self.instance_box.clear()
+
+        if self.current_instance_id is None:
+        # a message if no instance is selected
+            no_instance_label = toga.Label(
+                text="No instance selected. Please create or select an instance.",
+                style=Pack(padding=(0, 5)),
+            )
+            self.instance_box.add(no_instance_label)
+            self.instance_box.refresh()
+            return
+        
+        print(f'[i] Showing instance with id: {self.current_instance_id}')
+        print("graph_id", self.graph_id)
+        print("eventsfilter", EventsFilter.ALL)
+
+        events = []
+        for instance_key, instance_name in self.current_instance_id.items():
+            try:
+                event = await self.dcr_ar.get_events(self.graph_id, instance_key, EventsFilter.ALL)
+                events.extend(event)
+            except Exception as e:
+                print(f'[x] Error fetching events for instance {instance_key}: {e}')
+                continue
+            
+        role_items = []
+
+        print("after events call")
+
+        each_instance = toga.Label(
+            text = "Each instance will appear here"
         )
+
+        if self.user.role:
+            role_items.append(self.user.role)
+        for event in events:
+            event_role = event.role
+            if event_role not in role_items:
+                role_items.append(event_role)
+        
+        self.role_selection = toga.Selection(
+            items = role_items,
+            on_change = self.role_changed,
+            style=Pack(padding=(0, 5)),
+        )
+        if len(role_items) > 0:
+            self.role_selection.value = role_items[0]
+            self.user.role = self.role_selection.value
+        else:
+            self.user.role = None
+
+        main1_box = toga.Box(style = Pack(direction = ROW))
+
+        role_box = toga.Box(style = Pack(direction = COLUMN,  flex = 1))
+        role_label = toga.Label(
+            text = "Current Role:",
+            style=Pack(padding=(0, 5)),
+        )
+        select_role = toga.Label(
+            text = "Select other role:",
+            style=Pack(padding=(0, 5)),
+        )
+        role_box.add(role_label)
+        role_box.add(select_role)
+        role_box.add(self.role_selection)
+        main1_box.add(role_box)
+    
+
+        
+        instance_box_inner = toga.Box(style = Pack(direction = COLUMN, flex = 1))
+        instance_label = toga.Label(
+            text = "Current Instance:",
+            style=Pack(padding=(0, 5)),
+        )
+
+        added = toga.Label(
+            text = "Not added yet!",
+            style=Pack(padding=(0, 5)),
+        )
+
+        instance_box_inner.add(instance_label)
+        instance_box_inner.add(added)
+        main1_box.add(instance_box_inner)
+        
+
+
+        scroll = toga.ScrollContainer(horizontal=False,style=Pack(flex=1))
+        event_box = toga.Box(style=Pack(direction=COLUMN, padding = 5))
+
+        print("events", events)
+        if events:
+         for event in events:
+            color = None
+            btn_enabled = True
+            text = event.label
+            # print("text", text)
+            if event.enabled:
+                color = 'green'
+                print("text", text)
+            if event.pending:
+                color = 'blue'
+                text = text + " !"
+            if len(event.role) > 0:
+                if event.role != self.user.role:
+                    btn_enabled = False
+                text = text + f" (role: {event.role})"
+            if event.enabled:
+                event_button = toga.Button(
+                    text =  text,
+                    style = Pack(padding = 5, color = color),
+                    id = event.id,
+                    on_press = self.execute_event,
+                    enabled = btn_enabled
+                )
+                event_box.add(event_button)
+            
+
+        scroll.content = event_box
+
+        self.instance_box.add(each_instance)
+        self.instance_box.add(main1_box)
+        self.instance_box.add(scroll)
+
+        self.instance_box.refresh()
+
+        self.option_container.content['Instance run'] = self.instance_box
+
     # Add message for logout button
     async def print_message(self,widget):
         print("You want to logout!")
 
+
+    async def logout_handler(self,widget):
+         self.option_container.content['Login'].enabled = True
+         self.option_container.current_tab = 'Login'
+
+         self.option_container.content['All instances'].enabled = False
+         self.option_container.content['Instance run'].enabled = False
+         self.option_container.content['Logout'].enabled = False
+
+         self.user_input.value = None
+         self.password_input.value = None
 # Add gretting for login button
 def login_greeting(username):
     if username:
