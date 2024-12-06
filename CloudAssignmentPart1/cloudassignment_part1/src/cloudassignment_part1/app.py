@@ -210,12 +210,10 @@ class HelloWorld(toga.App):
         print('[i] Creating new instances')
         self.option_container.current_tab = 'Instance run'
         self.current_instance_id = self.dcr_ar.create_new_instance 
-        #HER
     async def show_instance(self,widget): 
         print(f'[i] You want to show: {widget.id}')
         self.option_container.current_tab = 'Instance run'
         self.current_instance_id = widget.id
-        #HER
     async def delete_instance_by_id(self,widget):
         print(f'[i] You want to delete: {widget.id}')
 
