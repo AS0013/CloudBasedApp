@@ -10,9 +10,9 @@ sql_query_template['get_all_instances'] = f""
 sql_query_template['get_instances_for_user'] = f""
 sql_query_template['insert_instance'] = f""
 sql_query_template['insert_instance_for_user'] = f""
-sql_query_template['update_instance'] = f""
-sql_query_template['delete_instance_from_user_instance'] = f""
-sql_query_template['delete_instance'] = f""
+sql_query_template['update_instance'] = f"UPDATE Instances SET IsInValidState = %(valid)s WHERE InstanceID = %(id)s"
+sql_query_template['delete_instance_from_user_instance'] = f"DELETE FROM UserInstances WHERE InstanceID = %(id)s"
+sql_query_template['delete_instance'] = f"DELETE FROM Instances WHERE InstanceID = %(id)s"
 
 
 def db_connect():
