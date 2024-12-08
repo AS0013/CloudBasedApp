@@ -283,7 +283,7 @@ class CloudApp(toga.App):
                 event_button = toga.Button(
                     text =  text,
                     style = Pack(padding = 5, color = color),
-                    id = event.id,
+                    id = f"event_{event.id}",
                     on_press = self.execute_event,
                     enabled = btn_enabled
                 )
