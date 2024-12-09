@@ -128,7 +128,7 @@ class CloudApp(toga.App):
         print('[i] Creating new instances')
         self.option_container.current_tab = 'Instance run'
         self.current_instance_id = await self.dcr_ar.create_new_instance(self.graph_id)
-        await self.show_instance_box()
+        await self.show_instance_box() #this is a comment
 
 
     async def show_instance(self,widget):
