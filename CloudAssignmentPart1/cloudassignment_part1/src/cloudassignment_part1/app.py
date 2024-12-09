@@ -1,5 +1,6 @@
 import httpx
 import toga
+import asyncio
 from toga.style import Pack
 from toga.style.pack import COLUMN, ROW
 from services.dcr_active_repository import check_login_from_dcr, DcrActiveRepository, EventsFilter, DcrUser
@@ -9,7 +10,8 @@ class CloudApp(toga.App):
     graph_id = "1986619"
     dcr_ar = None
     current_instance_id = None
-    
+    in_process_of_creating_instance = False
+
     def startup(self):
         login_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
         # Add username box
@@ -87,12 +89,18 @@ class CloudApp(toga.App):
     async def execute_event(self, widget):
         print (f'[i] You want to execute event: {widget.id}')
         await self.dcr_ar.execute_event(self.graph_id,self.current_instance_id,widget.id)
+        # await asyncio.sleep(0.5)
+        # events = await self.dcr_ar.get_events(self.graph_id,self.current_instance_id,EventsFilter.ALL)
         await self.show_instance_box()
         
     async def option_item_changed(self,widget):
         print('[i] You have selected another Option Item!')
         if widget.current_tab.text == 'All instances':
+            # if not self.current_instance_id:
             await self.show_instances_box()
+            
+
+
         if widget.current_tab.text == 'Instance run':
             if not self.current_instance_id:
                 instances = await self.dcr_ar.create_new_instance(self.graph_id)
@@ -125,10 +133,20 @@ class CloudApp(toga.App):
 
 
     async def create_new_instances(self,widget):
-        print('[i] Creating new instances')
-        self.option_container.current_tab = 'Instance run'
-        self.current_instance_id = await self.dcr_ar.create_new_instance(self.graph_id)
-        await self.show_instance_box()
+        # print('[i] Creating new instances')
+        # self.option_container.current_tab = 'Instance run'
+        # self.current_instance_id = await self.dcr_ar.create_new_instance(self.graph_id)
+        # await self.show_instance_box()
+        if self.in_process_of_creating_instance:
+            return
+        self.in_process_of_creating_instance = True
+        try:
+            print('[i] Creating new instances')
+            self.option_container.current_tab = 'Instance run'
+            # self.current_instance_id = await self.dcr_ar.create_new_instance(self.graph_id)
+            # await self.show_instance_box()
+        finally:
+            self.in_process_of_creating_instance = False
 
 
     async def show_instance(self,widget):
@@ -157,11 +175,11 @@ class CloudApp(toga.App):
 
             self.option_container.content['All instances'].enabled = True   
 
-            self.option_container.current_tab = 'All instances'
+            # self.option_container.current_tab = 'All instances'
 
             self.option_container.content['Instance run'].enabled = True
             self.option_container.content['Logout'].enabled = True
-            self.option_container.content['Login'].enabled = False
+            # self.option_container.content['Login'].enabled = False
 
             print("current tab", self.option_container.current_tab)
 
@@ -196,12 +214,14 @@ class CloudApp(toga.App):
 
         instances_box = toga.Box(style=Pack(direction=COLUMN, flex=1))
 
+        
+
         dcr_ar_instances = await self.dcr_ar.get_instances(self.graph_id)
         self.instances = dcr_ar_instances
 
         print("dcr_ar_instances", dcr_ar_instances)
 
-        if dcr_ar_instances:
+        if self.instances:
             for instance_id, instance_name in self.instances.items():
                 buttons_box = toga.Box(style=Pack(direction=ROW))
 
@@ -241,17 +261,22 @@ class CloudApp(toga.App):
 
     
 
-    async def show_instance_box(self):
+    async def show_instance_box(self, events = None):
         self.instance_box.clear()
         scroll = toga.ScrollContainer(horizontal=False,style=Pack(flex=1))
         event_box = toga.Box(style=Pack(direction=COLUMN, padding = 5))
 
-        events = []
+        if events is None:
+            print("events was None")
+            events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.ALL)
+
+        print("events", events)
+        # events = []
 
         print("current_instance_id", self.current_instance_id)
 
-        events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.ALL)
-        
+        # events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.ALL)
+        # print("events", events)
         role_items = []
 
 
@@ -262,13 +287,21 @@ class CloudApp(toga.App):
         if self.user.role:
             role_items.append(self.user.role)
         print("events", events)
+
+        for event in events:
+            event_role = event.role
+            if event_role not in role_items:
+                role_items.append(event_role)
+
+
+
         for event in events:
             color = None
             btn_enabled = True
             text = event.label
-            event_role = event.role
-            if event_role not in role_items:
-                role_items.append(event_role)
+            # event_role = event.role
+            # if event_role not in role_items:
+            #     role_items.append(event_role)
             if event.enabled:
                 color = 'green'
                 print("text", text)
