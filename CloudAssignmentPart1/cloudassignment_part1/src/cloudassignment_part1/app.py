@@ -82,7 +82,7 @@ class CloudApp(toga.App):
         print(f'[i] You changed the role to {widget.value}!')
 
         self.user.role = widget.value
-        dbc.update_dcr_role(self.user.role)
+        dbc.update_dcr_role(self.user.email,self.user.role)
         await self.show_instance_box()
 
     async def execute_event(self, widget):
@@ -115,15 +115,22 @@ class CloudApp(toga.App):
         
         dcr_ar_instances = await self.dcr_ar.get_instances(self.graph_id)
         self.instances = dcr_ar_instances
-        
+
+        valid_instances = []
+
         for instance_id, _ in self.instances.items():
+            instance_details = dbc.get_all_instances()
+            if instance_details:
+                for instance in instance_details:
+                    if instance[0] == int(instance_id) and instance[1]:
+                        valid_instances.append(instance_id)
+        
+        for instance_id in valid_instances:
             try:
-                await self.dcr_ar.delete_instance(self.graph_id, instance_id)
-                print(f'[i] Deleted instance: {instance_id}')
-            except Exception as e:
-                print(f'[e] Error deleting instance {instance_id}: {str(e)}')
-        
-        
+                await self.dcr_ar.delete_instance(self.graph_id,instance_id)
+            except Exception as ex:
+                print(f'[x] error delete_instance! {ex}')
+
         await self.show_instances_box()
     
         self.current_instance_id = None
@@ -147,7 +154,7 @@ class CloudApp(toga.App):
         print(f'[i] You want to delete: {widget.id}')
         instance_id_to_delete = widget.id.split('_')[1]
 
-        instance_data = await self.dcr_ar.get_instance(self.graph_id, instance_id_to_delete)
+        instance_data = await self.dcr_ar.get_instances(self.graph_id)
         if instance_data and not instance_data.get('True'):
             await self.dcr_ar.delete_instance(self.graph_id, instance_id_to_delete)
             

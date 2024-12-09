@@ -2,14 +2,11 @@ from mysql.connector import connect
 
 db_password = 'Pasword123'
 sql_query_template = {}
-sql_query_template['get_dcr_role'] = f"SELECT Role FROM DCRUsers WHERE
-Email = %(email)s"
+sql_query_template['get_dcr_role'] = f"SELECT Role FROM DCRUsers WHERE Email = %(email)s"
 #TODO: fill in these templates with the right SQL query
 sql_query_template['update_dcr_role'] = f"UPDATE DCRUsers SET Role = %(role)s WHERE Email = %(email)s"
-sql_query_template['get_all_instances'] = f"SELECT i.InstanceID, i.IsInValidState, ui.Email 
-    FROM Instances i INNER JOIN UserInstances ui ON i.InstanceID = ui.InstanceID;"
-sql_query_template['get_instances_for_user'] = f"SELECT i.InstanceID, i.IsInValidState
-    FROM Instances i INNER JOIN UserInstances ui ON i.InstanceID = ui.InstanceID WHERE ui.Email = %(email)s"
+sql_query_template['get_all_instances'] = f"SELECT i.InstanceID, i.IsInValidState, ui.Email FROM Instances i INNER JOIN UserInstances ui ON i.InstanceID = ui.InstanceID;"
+sql_query_template['get_instances_for_user'] = f"SELECT i.InstanceID, i.IsInValidState FROM Instances i INNER JOIN UserInstances ui ON i.InstanceID = ui.InstanceID WHERE ui.Email = %(email)s"
 sql_query_template['insert_instance'] = f"INSERT INTO Instances(InstanceID, IsInValidState) VALUES (%(id)s, %(bool)s)"
 sql_query_template['insert_instance_for_user'] = f"INSERT INTO UserInstances(Email, InstanceID) VALUES (%(email)s, %(id)s)"
 sql_query_template['update_instance'] = f"UPDATE Instances SET IsInValidState = %(valid)s WHERE InstanceID = %(id)s"
@@ -21,7 +18,7 @@ def db_connect():
     from pathlib import Path
     resources_folder = Path(__file__).parent.resolve()
     cert_filepath = str(resources_folder.joinpath("DigiCertGlobalRootCA.crt.pem"))
-    cnx = mysql.connector.connect(user="user1",
+    cnx = connect(user="user1",
     password=db_password,
     host="cloudassignment2group9.mysql.database.azure.com",
     port=3306,
