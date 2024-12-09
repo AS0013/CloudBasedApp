@@ -5,9 +5,8 @@ sql_query_template = {}
 sql_query_template['get_dcr_role'] = f"SELECT Role FROM DCRUsers WHERE
 Email = %(email)s"
 #TODO: fill in these templates with the right SQL query
-sql_query_template['get_dcr_role'] = f""
-sql_query_template['update_dcr_role'] = f""
-sql_query_template['get_all_instances'] = f""
+sql_query_template['update_dcr_role'] = f"UPDATE DCRUsers SET Role = %(role)s WHERE Email = %(email)s"
+sql_query_template['get_all_instances'] = f"SELECT InstanceID FROM Instances WHERE InstanceID = %(id)s"
 sql_query_template['get_instances_for_user'] = f"SELECT InstancesID FROM UserInstances WHERE Email = %(emal)s"
 sql_query_template['insert_instance'] = f"INSERT INTO Instances(InstanceID, IsInValidState) VALUES (%(id)s, %(bool)s)"
 sql_query_template['insert_instance_for_user'] = f"INSERT INTO UserInstances(Email, InstanceID) VALUES (%(email)s, %(id)s)"
