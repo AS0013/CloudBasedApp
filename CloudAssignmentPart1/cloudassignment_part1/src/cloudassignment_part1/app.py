@@ -82,11 +82,18 @@ class CloudApp(toga.App):
         print(f'[i] You changed the role to {widget.value}!')
 
         self.user.role = widget.value
+        dbc.update_dcr_role(self.user.role)
         await self.show_instance_box()
 
     async def execute_event(self, widget):
         print (f'[i] You want to execute event: {widget.id}')
         await self.dcr_ar.execute_event(self.graph_id,self.current_instance_id,widget.id)
+        
+        events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.ALL)
+        has_pending_events = any(event.pending for event in events)
+        valid_state = not has_pending_events
+        dbc.update_instance(self.current_instance_id, valid_state)
+
         await self.show_instance_box()
         
     async def option_item_changed(self,widget):
@@ -121,8 +128,6 @@ class CloudApp(toga.App):
     
         self.current_instance_id = None
 
-    
-
 
     async def create_new_instances(self,widget):
         print('[i] Creating new instances')
@@ -140,9 +145,17 @@ class CloudApp(toga.App):
 
     async def delete_instance_by_id(self,widget):
         print(f'[i] You want to delete: {widget.id}')
-        instance_id_to_delete = widget.id.split('_')[1] 
-        await self.dcr_ar.delete_instance(self.graph_id,instance_id_to_delete)
-        await self.show_instances_box()
+        instance_id_to_delete = widget.id.split('_')[1]
+
+        instance_data = await self.dcr_ar.get_instance(self.graph_id, instance_id_to_delete)
+        if instance_data and not instance_data.get('True'):
+            await self.dcr_ar.delete_instance(self.graph_id, instance_id_to_delete)
+            
+            dbc.delete_instance(instance_id_to_delete)
+            await self.show_instances_box()
+
+        else:
+            print(f'[i] Instance {instance_id_to_delete} is valid and cannot be deleted.')
                 
 
     # Add login button handler
