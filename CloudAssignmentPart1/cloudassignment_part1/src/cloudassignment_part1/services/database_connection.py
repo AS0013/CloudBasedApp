@@ -1,4 +1,4 @@
-from mysql.connector import connect
+import mysql.connector as mysql
 db_password = 'Pasword123'
 sql_query_template = {}
 # sql_query_template['get_dcr_role'] = f"SELECT Role FROM DCRUsers WHERE
@@ -18,7 +18,7 @@ def db_connect():
     from pathlib import Path
     resources_folder = Path(__file__).parent.resolve()
     cert_filepath = str(resources_folder.joinpath("DigiCertGlobalRootCA.crt.pem"))
-    cnx = mysql.connector.connect(user="user1",
+    cnx = mysql.connect(user="user1",
     password=db_password,
     host="cloudassignment2group9.mysql.database.azure.com",
     port=3306,

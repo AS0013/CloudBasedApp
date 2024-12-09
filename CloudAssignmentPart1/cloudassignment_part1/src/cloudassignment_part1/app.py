@@ -82,11 +82,21 @@ class CloudApp(toga.App):
         print(f'[i] You changed the role to {widget.value}!')
 
         self.user.role = widget.value
+        dbc.update_dcr_role(email=self.user.email,role=self.user.role)
         await self.show_instance_box()
 
     async def execute_event(self, widget):
         print (f'[i] You want to execute event: {widget.id}')
-        await self.dcr_ar.execute_event(self.graph_id,self.current_instance_id,widget.id)
+        events = await self.dcr_ar.execute_event(self.graph_id,self.current_instance_id,widget.id)
+
+        is_valid_state = all(not event.pending for event in events)
+
+        try:
+            dbc.update_instance_state(instance_id=self.current_instance_id, valid_state=is_valid_state)
+            print(f'[✓] Valid state updated in the database for instance {self.current_instance_id}')
+        except Exception as ex:
+            print(f'[x] Error updating instance valid state in the database: {ex}')
+
         await self.show_instance_box()
         
     async def option_item_changed(self,widget):
@@ -135,8 +145,21 @@ class CloudApp(toga.App):
     async def create_new_instances(self,widget):
         print('[i] Creating new instances')
         self.option_container.current_tab = 'Instance run'
-        self.current_instance_id = await self.dcr_ar.create_new_instance(self.graph_id)
-        await self.show_instance_box() #this is a comment
+        new_instance_id = await self.dcr_ar.create_new_instance(self.graph_id)
+        # await self.show_instance_box() #this is a comment
+        if new_instance_id:
+            events = await self.dcr_ar.get_events(self.graph_id, new_instance_id, EventsFilter.ALL)
+
+            is_valid_state = all(not event.pending for event in events)
+
+            try:
+                dbc.insert_instance(new_instance_id, is_valid_state, self.user.email)
+                print(f'[i] Inserted new instance {new_instance_id} with valid state: {is_valid_state}')
+            except Exception as ex:
+                print(f'[x] Error inserting instance into the database: {ex}')
+            await self.show_instance_box()
+        else:
+            print('[x] Failed to create a new instance')
 
 
     async def show_instance(self,widget):
