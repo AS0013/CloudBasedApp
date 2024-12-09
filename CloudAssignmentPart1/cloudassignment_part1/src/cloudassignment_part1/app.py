@@ -108,13 +108,21 @@ class CloudApp(toga.App):
         
         dcr_ar_instances = await self.dcr_ar.get_instances(self.graph_id)
         self.instances = dcr_ar_instances
+
+        valid_instances = []
         
         for instance_id, _ in self.instances.items():
+            instance_details = dbc.get_all_instances()
+            if instance_details:
+                for instance in instance_details:
+                    if instance[0] == int(instance_id) and instance[1]:
+                        valid_instances.append(instance_id)
+
+        for instance_id in valid_instances:
             try:
-                await self.dcr_ar.delete_instance(self.graph_id, instance_id)
-                print(f'[i] Deleted instance: {instance_id}')
-            except Exception as e:
-                print(f'[e] Error deleting instance {instance_id}: {str(e)}')
+                await self.dcr_ar.delete_instance(self.graph_id,instance_id)
+            except Exception as ex:
+                print(f'[x] error delete_instance! {ex}')
         
         
         await self.show_instances_box()
@@ -151,8 +159,8 @@ class CloudApp(toga.App):
 
         if connected:
             self.user = DcrUser(self.username_input.value,self.password_input.value)
-            # self.user.role = dbc.get_dcr_role(email=self.user.email)
-            # print(f'[i] Role: {self.user.role}')
+            self.user.role = dbc.get_dcr_role(email=self.user.email)
+            print(f'[i] Role: {self.user.role}')
             self.dcr_ar = DcrActiveRepository(self.user)
 
             self.option_container.content['All instances'].enabled = True   
