@@ -9,6 +9,7 @@ class CloudApp(toga.App):
     graph_id = "1986619"
     dcr_ar = None
     current_instance_id = None
+    # in_process_of_creating_instance = False
     
     def startup(self):
         login_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
@@ -92,12 +93,12 @@ class CloudApp(toga.App):
     async def option_item_changed(self,widget):
         print('[i] You have selected another Option Item!')
         if widget.current_tab.text == 'All instances':
-            if not self.current_instance_id:
-                instances = await self.dcr_ar.create_new_instance(self.graph_id)
-                if instances:
-                    self.current_instance_id = instances
-                else:
-                    self.current_instance_id = None
+            # if not self.current_instance_id:
+            #     instances = await self.dcr_ar.create_new_instance(self.graph_id)
+            #     if instances:
+            #         self.current_instance_id = instances
+            #     else:
+            #         self.current_instance_id = None
             await self.show_instances_box()
         if widget.current_tab.text == 'Instance run':
             if not self.current_instance_id:
