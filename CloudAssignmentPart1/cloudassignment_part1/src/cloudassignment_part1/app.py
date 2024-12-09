@@ -92,6 +92,12 @@ class CloudApp(toga.App):
     async def option_item_changed(self,widget):
         print('[i] You have selected another Option Item!')
         if widget.current_tab.text == 'All instances':
+            if not self.current_instance_id:
+                instances = await self.dcr_ar.create_new_instance(self.graph_id)
+                if instances:
+                    self.current_instance_id = instances
+                else:
+                    self.current_instance_id = None
             await self.show_instances_box()
         if widget.current_tab.text == 'Instance run':
             if not self.current_instance_id:
@@ -201,7 +207,7 @@ class CloudApp(toga.App):
 
         print("dcr_ar_instances", dcr_ar_instances)
 
-        if dcr_ar_instances:
+        if self.instances:
             for instance_id, instance_name in self.instances.items():
                 buttons_box = toga.Box(style=Pack(direction=ROW))
 
