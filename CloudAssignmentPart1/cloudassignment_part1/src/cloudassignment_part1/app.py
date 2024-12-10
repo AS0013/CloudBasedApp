@@ -171,8 +171,8 @@ class CloudApp(toga.App):
 
         if connected:
             self.user = DcrUser(self.username_input.value,self.password_input.value)
-            # self.user.role = dbc.get_dcr_role(email=self.user.email)
-            # print(f'[i] Role: {self.user.role}')
+            self.user.role = dbc.get_dcr_role(email=self.user.email)
+            print(f'[i] Role: {self.user.role}')
             self.dcr_ar = DcrActiveRepository(self.user)
 
             self.option_container.content['All instances'].enabled = True   

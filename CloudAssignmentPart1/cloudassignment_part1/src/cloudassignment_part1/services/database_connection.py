@@ -1,6 +1,6 @@
 from mysql.connector import connect
 
-db_password = 'Pasword123'
+db_password = 'Password123'
 sql_query_template = {}
 sql_query_template['get_dcr_role'] = f"SELECT Role FROM DCRUsers WHERE Email = %(email)s"
 #TODO: fill in these templates with the right SQL query
