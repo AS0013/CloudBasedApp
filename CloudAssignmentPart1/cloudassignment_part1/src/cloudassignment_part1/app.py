@@ -101,38 +101,33 @@ class CloudApp(toga.App):
         if widget.current_tab.text == 'All instances':
             await self.show_instances_box()
         if widget.current_tab.text == 'Instance run':
-            if not self.current_instance_id:
-                instances = await self.dcr_ar.create_new_instance(self.graph_id)
-                if instances:
-                    self.current_instance_id = instances
-                else:
-                    self.current_instance_id = None  
             await self.show_instance_box()
         
 
     async def delete_all_instances(self, widget):
         print('[i] Deleting all instances')
         
-        dcr_ar_instances = await self.dcr_ar.get_instances(self.graph_id)
-        self.instances = dcr_ar_instances
+        user_instances = dbc.get_instances_for_user(self.user.email)
+        if not user_instances:
+            print('[i] No instances found for the logged-in user.')
+            return
 
         valid_instances = []
 
-        for instance_id, _ in self.instances.items():
-            instance_details = dbc.get_all_instances()
-            if instance_details:
-                for instance in instance_details:
-                    if instance[0] == int(instance_id) and instance[1]:
-                        valid_instances.append(instance_id)
+        for instance in user_instances:
+            instance_id = instance[0]
+            is_valid = instance[1]
+            if is_valid:
+                valid_instances.append(instance_id)
         
         for instance_id in valid_instances:
             try:
                 await self.dcr_ar.delete_instance(self.graph_id,instance_id)
+                dbc.delete_instance(instance_id)
             except Exception as ex:
                 print(f'[x] error delete_instance! {ex}')
 
         await self.show_instances_box()
-    
         self.current_instance_id = None
 
 
@@ -140,6 +135,7 @@ class CloudApp(toga.App):
         print('[i] Creating new instances')
         self.option_container.current_tab = 'Instance run'
         self.current_instance_id = await self.dcr_ar.create_new_instance(self.graph_id)
+        dbc.insert_instance(self.current_instance_id, True, self.user.email)
         await self.show_instance_box()
 
 
@@ -216,12 +212,13 @@ class CloudApp(toga.App):
 
         instances_box = toga.Box(style=Pack(direction=COLUMN, flex=1))
 
+
         dcr_ar_instances = await self.dcr_ar.get_instances(self.graph_id)
+        my_instances = dbc.get_instances_for_user(self.user.email)
+        my_instance_ids = [instance[0] for instance in my_instances]
         self.instances = dcr_ar_instances
 
-        print("dcr_ar_instances", dcr_ar_instances)
-
-        if dcr_ar_instances:
+        if self.instances:
             for instance_id, instance_name in self.instances.items():
                 buttons_box = toga.Box(style=Pack(direction=ROW))
 
@@ -240,8 +237,10 @@ class CloudApp(toga.App):
                     id=f'X_{instance_id}'
                 )
                 buttons_box.add(del_button)
-
                 instances_box.add(buttons_box)
+                if int(instance_id) not in my_instance_ids:
+                    del_button.enabled = False
+                    instance_button.enabled = False    
         else:
             no_instances_label = toga.Label(
             text="No instances available",
@@ -265,16 +264,12 @@ class CloudApp(toga.App):
         self.instance_box.clear()
         scroll = toga.ScrollContainer(horizontal=False,style=Pack(flex=1))
         event_box = toga.Box(style=Pack(direction=COLUMN, padding = 5))
-
         events = []
 
         print("current_instance_id", self.current_instance_id)
 
         events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.ALL)
-        
         role_items = []
-
-
         each_instance = toga.Label(
             text = "Each instance will appear here"
         )
@@ -303,7 +298,7 @@ class CloudApp(toga.App):
                 event_button = toga.Button(
                     text =  text,
                     style = Pack(padding = 5, color = color),
-                    id = f"event_{event.id}",
+                    id = event.id,
                     on_press = self.execute_event,
                     enabled = btn_enabled
                 )
