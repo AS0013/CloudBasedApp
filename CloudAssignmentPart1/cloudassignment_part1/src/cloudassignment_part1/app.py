@@ -121,7 +121,7 @@ class CloudApp(toga.App):
         print("CPRNr, ",CPRNr)
         if CPRNr:
             await self.dcr_ar.execute_data_event(self.graph_id, self.current_instance_id, 'Activity0', CPRNr)
-            await dbc.insert_cpr(self.current_instance_id, 'Activity0', CPRNr)
+            dbc.insert_cpr(self.current_instance_id, 'Activity0', CPRNr)
             self.option_container.current_tab = 'Instance run'
             await self.execute_event()
 

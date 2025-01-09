@@ -115,7 +115,7 @@ class DcrActiveRepository(object):
             return events        
 
     async def execute_data_event(self, graph_id, instance_id, event_id, data):
-        url = f"https://repository.dcgraphs.net/api/graphs/{graph_id}/sims/{instance_id}/events/{event_id}"
+        url = f"https://repository.dcrgraphs.net/api/graphs/{graph_id}/sims/{instance_id}/events/{event_id}"
         async with httpx.AsyncClient() as client:
             post_data = {
                 "simulationID": int(instance_id),
