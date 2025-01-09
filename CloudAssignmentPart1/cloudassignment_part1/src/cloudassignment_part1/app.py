@@ -48,6 +48,8 @@ class CloudApp(toga.App):
         self.all_instances_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
         self.instance_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
 
+        self.data_event_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
+
         logout_box = toga.Box(style=Pack(direction=COLUMN,flex=1))
 
         button = toga.Button(
@@ -64,6 +66,7 @@ class CloudApp(toga.App):
                 toga.OptionItem("All instances", self.all_instances_box),
                 toga.OptionItem("Instance run", self.instance_box),
                 toga.OptionItem("Logout", logout_box),
+                toga.OptionItem("DataEvent", self.data_event_box)
                 ],
             on_select = self.option_item_changed,
             style=Pack(direction=COLUMN))
@@ -75,6 +78,7 @@ class CloudApp(toga.App):
         self.option_container.content['Logout'].enabled = False
         self.option_container.content['All instances'].enabled = False
         self.option_container.content['Instance run'].enabled = False
+        self.option_container.content['DataEvent'].enabled = False
 
 
 
@@ -85,15 +89,58 @@ class CloudApp(toga.App):
         dbc.update_dcr_role(self.user.email,self.user.role)
         await self.show_instance_box()
 
+
+    events_with_data = ['Activity0']
+
+    def display_data_event(self, event_id):
+        match event_id:
+            case 'Activity0':
+                self.display_CPR_form()
+        self.option_container.current_tab = 'DataEvent'
+    
+    def display_CPR_form(self):
+        self.data_event_box.clear()
+        cpr_label = toga.Label("Indtast venligst dit CPR-nummer", style=Pack(padding=(0, 10)))
+        self.cpr_input = toga.NumberInput(min=1, max=9999999999, step=1)
+        cpr_from_db = dbc.get_cpr(self.current_instance_id)
+        if cpr_from_db:
+            self.cpr_input.value = cpr_from_db
+        self.data_event_box.add(cpr_label)
+        self.data_event_box.add(self.cpr_input)
+    
+        submit_event_data = toga.Button(
+            "Submit",
+            on_press=self.submit_CPR,
+            style=Pack(padding=5)
+        )
+        self.data_event_box.add(submit_event_data)
+        self.data_event_box.refresh()
+    
+    async def submit_CPR(self, widget):
+        CPRNr = self.cpr_input.value
+        print("CPRNr, ",CPRNr)
+        if CPRNr:
+            await self.dcr_ar.execute_data_event(self.graph_id, self.current_instance_id, 'Activity0', CPRNr)
+            await dbc.insert_cpr(self.current_instance_id, 'Activity0', CPRNr)
+            self.option_container.current_tab = 'Instance run'
+            await self.execute_event()
+
     async def execute_event(self, widget):
         print (f'[i] You want to execute event: {widget.id}')
-        await self.dcr_ar.execute_event(self.graph_id,self.current_instance_id,widget.id)
+        event_id = widget.id
+        if event_id in self.events_with_data:
+            self.display_data_event(event_id)
+        else:
+            executed = await self.dcr_ar.execute_event(self.graph_id, self.current_instance_id, widget.id)
+            print(f"[!] executed: {executed}")
+            await self.after_execute_event()
+            #await self.dcr_ar.execute_event(self.graph_id,self.current_instance_id,widget.id)
         
+    async def after_execute_event(self):
         events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.ALL)
         has_pending_events = any(event.pending for event in events)
         valid_state = not has_pending_events
         dbc.update_instance(self.current_instance_id, valid_state)
-
         await self.show_instance_box()
         
     async def option_item_changed(self,widget):
@@ -178,6 +225,7 @@ class CloudApp(toga.App):
             self.option_container.content['Instance run'].enabled = True
             self.option_container.content['Logout'].enabled = True
             self.option_container.content['Login'].enabled = False
+            self.option_container.content['DataEvent'].enabled = True
 
             print("current tab", self.option_container.current_tab)
 

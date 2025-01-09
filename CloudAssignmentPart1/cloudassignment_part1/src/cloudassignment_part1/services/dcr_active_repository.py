@@ -92,7 +92,7 @@ class DcrActiveRepository(object):
         async with httpx.AsyncClient() as client:
             response = await client.delete(url, auth=self.basic_auth)
             return response.status_code
-            
+
     async def execute_event(self,graph_id,instance_id,event_id):
         url = f"https://repository.dcrgraphs.net/api/graphs/{graph_id}/sims/{instance_id}/events/{event_id}" #TODO: fill in the correct url CARO
         async with httpx.AsyncClient() as client:
@@ -113,6 +113,18 @@ class DcrActiveRepository(object):
                 events.append(event)
 
             return events        
+
+    async def execute_data_event(self, graph_id, instance_id, event_id, data):
+        url = f"https://repository.dcgraphs.net/api/graphs/{graph_id}/sims/{instance_id}/events/{event_id}"
+        async with httpx.AsyncClient() as client:
+            post_data = {
+                "simulationID": int(instance_id),
+                "dcrGraphId": int(graph_id),
+                "dataXML": str(data),
+            }
+            response = await client.post(url, json=post_data, auth=self.basic_auth)
+            return response.status_code
+
 
 async def check_login_from_dcr(username, password):
     '''
