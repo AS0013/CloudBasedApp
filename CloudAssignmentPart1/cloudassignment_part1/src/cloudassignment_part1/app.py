@@ -123,7 +123,7 @@ class CloudApp(toga.App):
             await self.dcr_ar.execute_data_event(self.graph_id, self.current_instance_id, 'Activity0', CPRNr)
             dbc.insert_cpr(self.current_instance_id, 'Activity0', CPRNr)
             self.option_container.current_tab = 'Instance run'
-            await self.execute_event()
+            await self.after_execute_event()
 
     async def execute_event(self, widget):
         print (f'[i] You want to execute event: {widget.id}')
@@ -136,11 +136,19 @@ class CloudApp(toga.App):
             await self.after_execute_event()
             #await self.dcr_ar.execute_event(self.graph_id,self.current_instance_id,widget.id)
         
-    async def after_execute_event(self):
+    """ async def after_execute_event(self):
         events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.ALL)
         has_pending_events = any(event.pending for event in events)
         valid_state = not has_pending_events
         dbc.update_instance(self.current_instance_id, valid_state)
+        await self.show_instance_box() """
+
+    async def after_execute_event(self):
+        pending_events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.PENDING)
+        valid = True
+        if len(pending_events) > 0:
+            valid = False
+        dbc.update_instance(self.current_instance_id, valid)
         await self.show_instance_box()
         
     async def option_item_changed(self,widget):

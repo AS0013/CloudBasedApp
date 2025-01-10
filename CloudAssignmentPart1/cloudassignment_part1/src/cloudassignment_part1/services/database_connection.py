@@ -13,7 +13,7 @@ sql_query_template['update_instance'] = f"UPDATE Instances SET IsInValidState = 
 sql_query_template['delete_instance_from_user_instance'] = f"DELETE FROM UserInstances WHERE InstanceID = %(id)s"
 sql_query_template['delete_instance'] = f"DELETE FROM Instances WHERE InstanceID = %(id)s"
 
-sql_query_template['insert_data'] = f"INSERT INTO DataEvents(InstanceID, EventID, CRPNr) VALUES (%(instance_id)s, %(event_id)s, %(data)s)"
+sql_query_template['insert_data'] = f"INSERT INTO DataEvents(InstanceID, EventID, CPRNr) VALUES (%(instance_id)s, %(event_id)s, %(data)s)"
 sql_query_template['update_data'] = f"UPDATE DataEvents SET CRPNr = %(data)s WHERE InstanceID = %(instance_id)s AND EventID = %(event_id)s"
 sql_query_template['get_data'] = f"SELECT de.CPRNr FROM DataEvents de WHERE de.InstanceID = %(instance_id)s;"
 sql_query_template['delete_data'] = f"DELETE FROM DataEvents WHERE InstanceID = %(instance_id)s AND EventID = %(event_id)s"
