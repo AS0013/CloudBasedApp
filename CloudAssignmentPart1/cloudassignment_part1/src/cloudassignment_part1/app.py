@@ -134,7 +134,6 @@ class CloudApp(toga.App):
             executed = await self.dcr_ar.execute_event(self.graph_id, self.current_instance_id, widget.id)
             print(f"[!] executed: {executed}")
             await self.after_execute_event()
-            #await self.dcr_ar.execute_event(self.graph_id,self.current_instance_id,widget.id)
         
     """ async def after_execute_event(self):
         events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.ALL)
@@ -322,7 +321,7 @@ class CloudApp(toga.App):
         event_box = toga.Box(style=Pack(direction=COLUMN, padding = 5))
         events = []
 
-        print("current_instance_id", self.current_instance_id)
+        #print("current_instance_id", self.current_instance_id)
 
         events = await self.dcr_ar.get_events(self.graph_id, self.current_instance_id, EventsFilter.ALL)
         role_items = []
