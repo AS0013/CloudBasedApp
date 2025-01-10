@@ -16,7 +16,7 @@ sql_query_template['delete_instance'] = f"DELETE FROM Instances WHERE InstanceID
 sql_query_template['insert_data'] = f"INSERT INTO DataEvents(InstanceID, EventID, CPRNr) VALUES (%(instance_id)s, %(event_id)s, %(data)s)"
 sql_query_template['update_data'] = f"UPDATE DataEvents SET CRPNr = %(data)s WHERE InstanceID = %(instance_id)s AND EventID = %(event_id)s"
 sql_query_template['get_data'] = f"SELECT de.CPRNr FROM DataEvents de WHERE de.InstanceID = %(instance_id)s;"
-sql_query_template['delete_data'] = f"DELETE FROM DataEvents WHERE InstanceID = %(instance_id)s AND EventID = %(event_id)s"
+sql_query_template['delete_data'] = f"DELETE FROM DataEvents WHERE InstanceID = %(instance_id)s"
 
 def db_connect():
     from pathlib import Path
@@ -114,9 +114,9 @@ def delete_instance(id):
     try:
         cnx = db_connect()
         cursor = cnx.cursor(buffered=True)
+        cursor.execute(sql_query_template['delete_data'], {'instance_id':id},multi=False)
         cursor.execute(sql_query_template['delete_instance_from_user_instance'],{'id':id}, multi=False)
-        cursor.execute(sql_query_template['delete_instance'], {'id':id},
-        multi=False)
+        cursor.execute(sql_query_template['delete_instance'], {'id':id},multi=False)
         cnx.commit()
         cursor.close()
         cnx.close()
