@@ -372,7 +372,7 @@ class CloudApp(toga.App):
 
         role_box = toga.Box(style = Pack(direction = COLUMN,  flex = 1))
         role_label = toga.Label(
-            text = "Current Role:",
+            text = f"Current Role: {self.user.role}",
             style=Pack(padding=(0, 5)),
         )
         select_role = toga.Label(
