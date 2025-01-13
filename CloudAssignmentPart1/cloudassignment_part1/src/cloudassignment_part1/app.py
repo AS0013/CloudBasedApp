@@ -393,7 +393,7 @@ class CloudApp(toga.App):
         )
 
         added = toga.Label(
-            text = "Not added yet!",
+            text = f"{self.current_instance_id}",
             style=Pack(padding=(0, 5)),
         )
 
